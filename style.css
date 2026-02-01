@@ -1,46 +1,39 @@
-/* OPTIMIZED FOR HIGH PERFORMANCE CEF */
+/* GTA V RP STYLE - HIGH PERFORMANCE */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 * {
     box-sizing: border-box;
     user-select: none;
     -webkit-user-select: none;
-    margin: 0;
-    padding: 0;
+    outline: none;
 }
 
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Teko', sans-serif;
-    /* Efficient font */
-    overflow: hidden;
-    color: white;
-    background: transparent;
+    font-family: 'Inter', sans-serif;
     height: 100vh;
+    width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Force GPU Composition for whole page */
+    background: transparent;
+    overflow: hidden;
+    /* Force GPU */
     transform: translateZ(0);
-    -webkit-transform: translateZ(0);
 }
 
-.inventory-container {
-    width: 85vw;
-    height: 75vh;
-    max-width: 1200px;
-    /* High Performance Background: No Blur, efficient Opacity */
-    background-color: #141414;
-    opacity: 0.96;
-    border-radius: 8px;
-    border: 1px solid #333;
-    /* Faster than rgba */
+.inventory-wrapper {
+    width: 1000px;
+    height: 650px;
+    background: rgba(15, 15, 20, 0.95);
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    /* Simple shadow, no spread/blur radius calculation overkill */
-    box-shadow: 0 10px 20px #000;
-    /* Isolate layer */
-    transform: translate3d(0, 0, 0);
+    padding: 25px;
+    color: white;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+    border: 1px solid #333;
 }
 
 /* Header */
@@ -49,237 +42,300 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    border-bottom: 2px solid #2ecc71;
-    /* Solid color is fast */
-    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
 }
 
-.title-box h1 {
-    font-size: 40px;
-    font-weight: 500;
-    color: #fff;
-    margin: 0;
+.branding {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.branding i {
+    font-size: 24px;
+    color: #3498db;
+}
+
+.branding h1 {
+    font-size: 24px;
+    font-weight: 700;
     letter-spacing: 1px;
+    margin: 0;
+    color: #eee;
 }
 
-.stats-box {
+.player-info {
     display: flex;
     gap: 15px;
 }
 
-.stat {
+.info-pill {
+    background: #1a1a1e;
+    padding: 6px 15px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
-    font-size: 24px;
-    color: #eee;
-    background: #222;
-    padding: 5px 15px;
-    border-radius: 4px;
+    gap: 10px;
+    border: 1px solid #2a2a2e;
+    font-weight: 500;
+    font-size: 14px;
 }
 
-.stat img {
-    height: 24px;
-    margin-right: 10px;
+.info-pill img {
+    width: 20px;
+    height: 20px;
 }
 
-/* Panels */
-.main-content {
+.info-pill.green {
+    color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.2);
+}
+
+/* Content Layout */
+.content-area {
     display: flex;
     flex: 1;
     gap: 20px;
     overflow: hidden;
 }
 
-.panel {
+.inventory-panel {
+    flex: 2;
     display: flex;
     flex-direction: column;
-    background: #1a1a1a;
-    border-radius: 6px;
-    padding: 10px;
-    position: relative;
 }
 
-.left-panel {
-    flex: 2;
-}
-
-.right-panel {
+.equipment-panel {
     flex: 1;
-    min-width: 250px;
+    background: #131316;
+    border-radius: 4px;
+    border: 1px solid #252528;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Weight Bar */
-.panel-header {
-    margin-bottom: 10px;
-    background: #222;
-    padding: 5px 10px;
+.panel-top {
+    margin-bottom: 15px;
+}
+
+.weight-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #1a1a1e;
+    padding: 8px 12px;
     border-radius: 4px;
-    display: flex;
-    align-items: center;
+    border: 1px solid #2a2a2e;
 }
 
-.weight-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
+.weight-display i {
+    color: #777;
 }
 
-.weight-bar-container {
+.progress-track {
     flex: 1;
-    height: 10px;
-    background: #333;
-    clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
-    /* Cool shape, cheap render */
+    height: 6px;
+    background: #000;
+    border-radius: 3px;
+    overflow: hidden;
 }
 
-.weight-bar-fill {
+.progress-fill {
     height: 100%;
-    background: #2ecc71;
+    background: #3498db;
     width: 0%;
-    /* Transition only width, efficient */
-    transition: width 0.2s linear;
+    transition: width 0.3s ease;
 }
 
-.weight-value {
-    font-size: 22px;
-    font-weight: bold;
-    color: #fff;
-    min-width: 80px;
+#weight-text {
+    font-size: 12px;
+    color: #aaa;
+    font-weight: 600;
+    min-width: 60px;
     text-align: right;
 }
 
-/* Grids - Optimized */
-.slots-grid {
+/* Grid */
+.grid-container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-auto-rows: min-content;
-    gap: 10px;
-    overflow-y: auto;
-    padding: 5px;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 8px;
     flex: 1;
-    /* Scroll optimization */
-    -webkit-overflow-scrolling: touch;
 }
 
 .slot {
-    aspect-ratio: 1;
-    background-color: #252525;
-    border: 1px solid #333;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 4px;
+    /* Slight round */
     position: relative;
+    transition: background 0.1s, border-color 0.1s;
     cursor: pointer;
-    /* No transitions by default to save CPU */
 }
 
 .slot:hover {
-    background-color: #2f2f2f;
-    border-color: #2ecc71;
-    /* Only on hover do we repaint */
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #3498db;
+}
+
+.slot.active-context {
+    border-color: #3498db;
+    background: rgba(52, 152, 219, 0.1);
 }
 
 .slot img {
-    width: 70%;
-    height: 70%;
+    width: 65%;
+    height: 65%;
     object-fit: contain;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
-    /* Ignore clicks on image */
 }
 
 .slot-count {
     position: absolute;
-    top: 2px;
-    left: 4px;
-    font-size: 14px;
+    bottom: 4px;
+    right: 6px;
+    font-size: 11px;
     color: #bbb;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 0 4px;
-    border-radius: 2px;
-    pointer-events: none;
+    font-weight: 600;
 }
 
 .slot-name {
+    display: none;
+    /* Clean look: hide name until hover? Or just hide entirely for "clean" look. 
+                     Common in RP servers to rely on Icon + Tooltip. 
+                     But user wants "better". Let's show on hover tooltip style? 
+                     Or simplify: show at bottom if space. */
+    /* Let's Try: Show small at top */
     position: absolute;
-    bottom: 2px;
-    width: 100%;
-    text-align: center;
-    font-size: 13px;
-    color: #888;
+    top: 4px;
+    left: 5px;
+    font-size: 10px;
+    color: #666;
+    width: 90%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    pointer-events: none;
 }
 
-/* Quick Items */
-.quick-items-section {
-    margin-top: 10px;
-    background: #181818;
-    padding: 10px;
-    border-radius: 4px;
+.slot:hover .slot-name {
+    color: #fff;
 }
 
-.quick-title {
-    font-size: 14px;
-    color: #2ecc71;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.quick-slots {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-}
-
-.quick-slot-number {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #2ecc71;
-    color: #000;
-    font-weight: bold;
-    width: 16px;
-    height: 16px;
-    font-size: 11px;
+/* Pagination */
+.pagination {
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 50%;
+    gap: 20px;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #2a2a2e;
 }
 
-/* Context Menu - Simple & Fast */
+.page-btn {
+    background: #252528;
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.page-btn:hover {
+    background: #3498db;
+}
+
+.page-indicator {
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+}
+
+/* Equipment */
+.equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.panel-title {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #777;
+    font-weight: 600;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+}
+
+.character-preview-placeholder {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #222;
+    font-size: 100px;
+    opacity: 0.5;
+}
+
+/* Context Menu */
 .context-menu {
     position: absolute;
-    background: #1a1a1a;
-    border: 1px solid #2ecc71;
-    padding: 0;
+    background: #1e1e24;
+    border: 1px solid #444;
+    width: 140px;
     display: none;
     flex-direction: column;
-    min-width: 150px;
-    z-index: 9999;
+    z-index: 1000;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
 }
 
-.context-item.header {
-    background: #2ecc71;
-    color: #000;
-    padding: 8px;
-    font-weight: bold;
+.ui-header {
+    background: #25252a;
+    color: #888;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
     text-transform: uppercase;
-}
-
-.context-btn {
-    padding: 10px;
-    color: #fff;
-    cursor: pointer;
     border-bottom: 1px solid #333;
-    font-size: 16px;
 }
 
-.context-btn:hover {
-    background: #333;
+.ui-option {
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #eee;
+    font-size: 14px;
+    transition: background 0.1s;
+}
+
+.ui-option:hover {
+    background: #3498db;
+    color: #fff;
+}
+
+.ui-option i {
+    width: 16px;
+    text-align: center;
+    font-size: 12px;
 }
