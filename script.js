@@ -2,22 +2,22 @@
 // State
 let activeSlot = null;
 let inventoryData = [];
-const TOTAL_SLOTS = 25; // Main grid size (5x5)
+const TOTAL_SLOTS = 25;
 
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
     generateSlots();
+    generateAccessorySlots();
     setupEventListeners();
-
-    // Test Mode (Remove in production)
-    // testFill(); 
 });
 
 if (window.cef) {
-    cef.on("inventory:clear", clearInventory);
+    // New bulk events
+    cef.on("inventory:setItems", setItems);
+    cef.on("inventory:setAccessories", setAccessories);
     cef.on("inventory:setStats", updateStats);
-    cef.on("inventory:addItem", addItem);
-    cef.on("inventory:addUsedItem", addUsedItem);
+    // Legacy support if needed, but we use bulk now
+    cef.on("inventory:clear", clearInventory);
 }
 
 function generateSlots() {
@@ -33,20 +33,13 @@ function generateSlots() {
         grid.appendChild(slot);
     }
 
-    // Quick Slots (first 5 or separate?)
-    // In design quick slots are at bottom.
-    // Let's assume Quick Slots are slots 0-4, or separate indices.
-    // For now, I'll generate visual placeholders for quick slots 1-5
+    // Quick Slots
     const quickGrid = document.getElementById('quick-slots');
     quickGrid.innerHTML = '';
     for (let i = 0; i < 5; i++) {
         const slot = document.createElement('div');
         slot.className = 'slot';
-        slot.dataset.index = 100 + i; // Special index for quick slots if needed
-        // But usually Quick slots *map* to inventory slots.
-        // Let's assume indices 0-4 are quick slots.
-        // So I'll just clone or reference them?
-        // Actually, let's treat them as separate visual slots but maybe mapping to id 0-4.
+        slot.dataset.index = i; // Map to first 5 slots based on index
 
         const num = document.createElement('div');
         num.className = 'quick-slot-number';
@@ -55,63 +48,92 @@ function generateSlots() {
 
         quickGrid.appendChild(slot);
     }
+
+    inventoryData = new Array(TOTAL_SLOTS).fill(null);
 }
 
-function clearInventory() {
-    console.log("Clearing inventory");
-    const slots = document.querySelectorAll('.slot');
-    slots.forEach(slot => {
-        // Clear content except quick slot number
-        const num = slot.querySelector('.quick-slot-number');
-        slot.innerHTML = '';
-        if (num) slot.appendChild(num);
-
-        slot.classList.remove('active');
-        delete slot.dataset.model;
-    });
-    inventoryData = [];
-    document.getElementById('current-weight').innerText = 0;
+function generateAccessorySlots() {
+    const grid = document.getElementById('accessories-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    // 8 Accessory slots
+    for (let i = 0; i < 8; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'slot accessory-slot';
+        slot.dataset.accIndex = i;
+        grid.appendChild(slot);
+    }
 }
 
 function updateStats(skin, name, health, armour, money) {
     document.getElementById('player-money').innerText = '$' + money.toLocaleString();
-    document.getElementById('player-id').innerText = 'ID'; // Or pass ID if available
-    // Could update visual character preview if capable
+    if (document.getElementById('player-id'))
+        document.getElementById('player-id').innerText = name;
 }
 
-function addItem(slotIndex, model, amount, name, useText) {
-    // console.log(`Add item: ${name} at ${slotIndex}`);
+function clearInventory() {
+    const slots = document.querySelectorAll('#inventory-grid .slot');
+    slots.forEach(s => clearSlot(s));
 
-    // Determine if it's in quick slots range (e.g. 0-4) or main grid
-    // If we map 0-4 to Quick Slots, and 5-24 to Grid?
-    // The PAWN loop goes 0 to 50.
-    // If the grid shows 0-24, and Quick slots are 0-4 (duplicated?)
-    // Let's render 0-24 in the MAIN grid.
+    const quickSlots = document.querySelectorAll('#quick-slots .slot');
+    quickSlots.forEach(s => clearSlot(s));
 
-    // Main Grid Slot
-    if (slotIndex < TOTAL_SLOTS) {
-        renderItemInSlot('inventory-grid', slotIndex, model, amount, name);
+    inventoryData = new Array(TOTAL_SLOTS).fill(null);
+    document.getElementById('current-weight').innerText = 0;
+    const bar = document.getElementById('weight-bar');
+    if (bar) bar.style.width = '0%';
+}
+
+function clearSlot(slot) {
+    const num = slot.querySelector('.quick-slot-number');
+    slot.innerHTML = '';
+    if (num) slot.appendChild(num);
+    slot.classList.remove('active');
+    delete slot.dataset.model;
+}
+
+function setItems(jsonString) {
+    clearInventory();
+    let totalItems = 0;
+
+    try {
+        const items = JSON.parse(jsonString);
+        items.forEach(item => {
+            if (item.slot < TOTAL_SLOTS) {
+                // Render in main grid
+                renderItemInSlot('inventory-grid', item.slot, item.model, item.amount, item.name);
+
+                // Render in quick slots if applicable
+                if (item.slot < 5) {
+                    renderItemInSlot('quick-slots', item.slot, item.model, item.amount, item.name);
+                }
+
+                inventoryData[item.slot] = item;
+                totalItems++;
+            }
+        });
+    } catch (e) {
+        console.error("JSON Parse error", e);
     }
 
-    // Check if it should also appear in Quick Slots (if 0-4)
-    if (slotIndex < 5) {
-        // renderItemInSlot('quick-slots', slotIndex, model, amount, name);
-        // Quick slots logic might need specific targeting since quick-slots children are 0-4
-        const quickContainer = document.getElementById('quick-slots');
-        if (quickContainer.children[slotIndex]) {
-            const slot = quickContainer.children[slotIndex];
-            updateSlotContent(slot, model, amount, name);
-        }
-    }
-
-    inventoryData[slotIndex] = { model, amount, name, useText };
     updateWeight();
 }
 
-function addUsedItem(slotIndex, model) {
-    // Render in Accessories grid
-    // We haven't generated accessories grid yet, let's just log or ignore for MVP
-    // Or generate on fly
+function setAccessories(jsonString) {
+    const grid = document.getElementById('accessories-grid');
+    if (!grid) return;
+
+    Array.from(grid.children).forEach(s => s.innerHTML = '');
+
+    try {
+        const accs = JSON.parse(jsonString);
+        accs.forEach(item => {
+            if (grid.children[item.slot]) {
+                const slot = grid.children[item.slot];
+                updateSlotContent(slot, item.model, 1, "");
+            }
+        });
+    } catch (e) { console.error(e); }
 }
 
 function renderItemInSlot(gridId, index, model, amount, name) {
@@ -123,48 +145,47 @@ function renderItemInSlot(gridId, index, model, amount, name) {
 }
 
 function updateSlotContent(slot, model, amount, name) {
-    // Image
-    let img = slot.querySelector('img');
-    if (!img) {
-        img = document.createElement('img');
-        slot.appendChild(img);
-    }
+    let img = document.createElement('img');
     img.src = `assets/items/${model}.png`;
-    // Fallback to a generic box icon if specific item image is missing
     img.onerror = () => { img.src = 'https://img.icons8.com/fluency/96/open-box.png'; };
+    slot.appendChild(img);
 
-    // Count
-    let count = slot.querySelector('.slot-count');
-    if (!count) {
-        count = document.createElement('div');
+    if (amount > 1) {
+        let count = document.createElement('div');
         count.className = 'slot-count';
+        count.innerText = `x${amount}`;
         slot.appendChild(count);
     }
-    count.innerText = amount > 1 ? `x${amount}` : '';
 
-    // Name
-    let nameEl = slot.querySelector('.slot-name');
-    if (!nameEl) {
-        nameEl = document.createElement('div');
+    if (name) {
+        let nameEl = document.createElement('div');
         nameEl.className = 'slot-name';
+        nameEl.innerText = name;
         slot.appendChild(nameEl);
     }
-    nameEl.innerText = name;
 
     slot.dataset.model = model;
 }
 
 function updateWeight() {
-    // Simple weight calc: 1 item = 1kg? Or need weight param.
-    // User image shows "94 / 100".
-    // I'll just count items for now or use randomness if data missing
-    const current = inventoryData.filter(x => x).length * 2; // placeholder
-    document.getElementById('current-weight').innerText = current;
+    const filledSlots = inventoryData.filter(x => x).length;
+    const weight = filledSlots * 2; // placeholder weight calc
+
+    document.getElementById('current-weight').innerText = weight;
+
+    const percent = Math.min((weight / 64) * 100, 100);
+    const bar = document.getElementById('weight-bar');
+    if (bar) {
+        bar.style.width = `${percent}%`;
+
+        if (percent > 90) bar.style.background = '#e74c3c'; // Red
+        else if (percent > 70) bar.style.background = '#f1c40f'; // Yellow
+        else bar.style.background = 'linear-gradient(90deg, #2ecc71, #27ae60)'; // Green
+    }
 }
 
 function onSlotClick(index) {
     hideContextMenu();
-    // Highlight
 }
 
 function onSlotRightClick(e, index) {
@@ -183,10 +204,6 @@ function showContextMenu(x, y, item) {
     menu.style.top = y + 'px';
 
     document.getElementById('context-item-name').innerText = item.name;
-
-    // Update button text?
-    // const useBtn = menu.children[1];
-    // useBtn.innerText = item.useText || "USE";
 }
 
 function hideContextMenu() {
@@ -196,29 +213,24 @@ function hideContextMenu() {
 
 function useItem() {
     if (activeSlot !== null) {
-        if (window.cef) {
-            cef.emit("inventory:useItem", activeSlot);
-        }
+        if (window.cef) cef.emit("inventory:useItem", activeSlot);
         hideContextMenu();
     }
 }
 
 function dropItem() {
-    // Not implemented in PAWN yet
-    hideContextMenu();
+    if (activeSlot !== null) {
+        if (window.cef) cef.emit("inventory:dropItem", activeSlot);
+        hideContextMenu();
+    }
 }
 
 function giveItem() {
-    // Not implemented
     hideContextMenu();
 }
 
 function closeInventory() {
-    if (window.cef) {
-        cef.emit("inventory:close");
-    }
-    // Also hide locally?
-    // document.body.style.display = 'none';
+    if (window.cef) cef.emit("inventory:close");
 }
 
 function setupEventListeners() {
