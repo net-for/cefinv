@@ -1,0 +1,312 @@
+* {
+    box-sizing: border-box;
+    user-select: none;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Teko', sans-serif; /* A font similar to the one in image */
+    overflow: hidden;
+    color: white;
+    /* Transparent background for CEF overlay */
+    background: rgba(0, 0, 0, 0); 
+}
+
+.inventory-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    height: 70vh;
+    background:radial-gradient(circle at center, rgba(30,30,30,0.95), rgba(10,10,10,0.98));
+    border-radius: 10px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    /* Dirty texture overlay effect can be added here */
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.title-box {
+    background-color: #2ecc71; /* Green color */
+    padding: 5px 30px;
+    transform: skewX(-15deg);
+    /* Clip path for brush effect simulation */
+    clip-path: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%);
+    box-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+}
+
+.title-box h1 {
+    font-size: 42px;
+    margin: 0;
+    transform: skewX(15deg); /* Counter-skew text */
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    line-height: 1;
+}
+
+.stats-box {
+    display: flex;
+    gap: 20px;
+}
+
+.stat {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 15px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    flex: 1;
+    gap: 30px;
+    overflow: hidden;
+}
+
+.panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 10px;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.panel-header {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.weight-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ccc;
+}
+
+.weight-text {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.weight-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #fff;
+    margin-left: 10px;
+}
+
+.max-weight {
+    font-size: 18px;
+    color: #888;
+}
+
+/* Grid System */
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 8px;
+    overflow-y: auto;
+    padding-right: 5px;
+    flex: 1;
+}
+
+/* Scrollbar */
+.slots-grid::-webkit-scrollbar {
+    width: 5px;
+}
+.slots-grid::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.3);
+}
+.slots-grid::-webkit-scrollbar-thumb {
+    background: #2ecc71;
+    border-radius: 3px;
+}
+
+.slot {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    position: relative;
+    /* Rough edges effect */
+    mask-image: url('data:image/svg+xml;utf8,<svg ...>'); /* Optional grunge mask */
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.slot:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(46, 204, 113, 0.5);
+}
+
+.slot.active {
+    border-color: #2ecc71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
+}
+
+.slot-count {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 14px;
+    color: #aaa;
+}
+
+.slot-weight {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 12px;
+    color: #666;
+}
+
+.slot img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.slot-name {
+    position: absolute;
+    bottom: 4px;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    color: #ddd;
+    text-shadow: 1px 1px 2px black;
+}
+
+/* Quick Items */
+.quick-items-section {
+    margin-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 10px;
+}
+
+.quick-title {
+    background: #2ecc71;
+    color: black;
+    display: inline-block;
+    padding: 2px 10px;
+    font-size: 18px;
+    transform: skewX(-15deg);
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.quick-slots {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.quick-slot-number {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #eee;
+    color: #111;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 2px;
+}
+
+/* Context Menu */
+.context-menu {
+    position: absolute;
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid #333;
+    padding: 5px;
+    display: none;
+    flex-direction: column;
+    width: 150px;
+    z-index: 100;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+}
+
+.context-item.header {
+    background: #c0392b; /* Reddish header like in image */
+    color: white;
+    padding: 5px;
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 5px;
+    clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+}
+
+.context-btn {
+    background: white;
+    color: black;
+    margin: 3px 0;
+    padding: 4px 0;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    clip-path: polygon(2% 0, 98% 0, 100% 100%, 0% 100%); /* Slight rough shape */
+    transition: transform 0.1s;
+}
+
+.context-btn:hover {
+    transform: scale(1.05);
+    background: #ddd;
+}
+
+/* Right Panel specific */
+.panel-header-right .title-box {
+    background: #2ecc71;
+    padding: 2px 20px;
+}
+
+.panel-header-right h2 {
+    font-size: 28px;
+    margin: 0;
+    transform: skewX(15deg);
+    color: #111;
+}
+
+.close-overlay {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 30px;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+}
+.close-overlay:hover {
+    color: #fff;
+}
